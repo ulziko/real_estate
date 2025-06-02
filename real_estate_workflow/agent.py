@@ -14,6 +14,7 @@ from google.genai.types import Content, HttpOptions, Part
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
 from google.adk.events import Event, EventActions
+from google.adk.tools.agent_tool import AgentTool
 from pydantic import BaseModel, Field
 from google import genai
 from langchain_community.tools.tavily_search import TavilySearchResults
@@ -24,7 +25,7 @@ from multi_agents.agents.retrieval.crime_rate_retrieval import CrimeRateAgent
 from multi_agents.agents.retrieval.avg_price_by_district_retriever import AvgPriceRetriever
 from multi_agents.agents.research.district_analysis import DistrictAnalysisAgent
 from multi_agents.agents.research.safety_agent import SafetyAnalysisAgent
-
+from . import prompt
 LLM_Model = "gemini-1.5-pro"
 
 logging.basicConfig(level=logging.INFO)
@@ -53,9 +54,36 @@ sequential_analysis_agent = SequentialAgent(
     sub_agents=[district_analysis, safety_analysis]
 )
 
-#Writer agent
-root_agent = SequentialAgent(
+
+report_generator_agent = SequentialAgent(
     name="real_estate_workflow",
     sub_agents=[parallel_retrieval_agent, sequential_analysis_agent]
+)
+
+question_answering_agent = LlmAgent(
+    name="real_estate_information_provider",
+    instruction=prompt.ACADEMIC_WEBSEARCH_PROMPT,
+    output_key="answer to provided prompt",
+    description=(
+      "research on internet "
+    ),
+    tools=[search_tool]
+)
+
+
+root_agent = LlmAgent(
+    name="real_state_coordinator",
+    model=llm,
+    description=(
+        "analyzing real state links from users and generating reports"
+        "providing  advice"
+        " generating suggestions on what real estate, and location is better"
+        "for new research directions, and accessing web resources "
+    ),
+    instruction=prompt.REAL_STATE_PROMPT,
+    tools=[
+        AgentTool(agent=report_generator_agent),
+        AgentTool(agent=question_answering_agent),
+    ],
 )
 
