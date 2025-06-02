@@ -54,36 +54,9 @@ sequential_analysis_agent = SequentialAgent(
     sub_agents=[district_analysis, safety_analysis]
 )
 
-
-report_generator_agent = SequentialAgent(
+root_agent = SequentialAgent(
     name="real_estate_workflow",
     sub_agents=[parallel_retrieval_agent, sequential_analysis_agent]
 )
 
-question_answering_agent = LlmAgent(
-    name="real_estate_information_provider",
-    instruction=prompt.ACADEMIC_WEBSEARCH_PROMPT,
-    output_key="answer to provided prompt",
-    description=(
-      "research on internet "
-    ),
-    tools=[search_tool]
-)
-
-
-root_agent = LlmAgent(
-    name="real_state_coordinator",
-    model=llm,
-    description=(
-        "analyzing real state links from users and generating reports"
-        "providing  advice"
-        " generating suggestions on what real estate, and location is better"
-        "for new research directions, and accessing web resources "
-    ),
-    instruction=prompt.REAL_STATE_PROMPT,
-    tools=[
-        AgentTool(agent=report_generator_agent),
-        AgentTool(agent=question_answering_agent),
-    ],
-)
 

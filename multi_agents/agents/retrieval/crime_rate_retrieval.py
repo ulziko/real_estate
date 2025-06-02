@@ -23,7 +23,7 @@ class CrimeRateAgent(BaseAgent):
         url = "https://opendata.1212.mn/api/Data?type=json"
         payload = {
             "tbl_id": "DT_NSO_2300_003V1", 
-            "Period": ["2025", "2024","2023", "2022", "2021"], 
+            "Period": ["2025", "2024","2023"], 
         }
 
         headers = {

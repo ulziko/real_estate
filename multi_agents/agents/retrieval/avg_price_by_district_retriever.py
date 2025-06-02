@@ -24,7 +24,7 @@ class AvgPriceRetriever(BaseAgent):
 
         payload = {
         "tbl_id": "DT_NSO_0300_00V2", 
-        "Period": ["202504", "202503", "202502"], 
+        "Period": ["202504"], 
         }
 
         headers = {
