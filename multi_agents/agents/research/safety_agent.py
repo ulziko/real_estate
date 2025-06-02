@@ -1,7 +1,6 @@
 import logging
 from typing import AsyncGenerator, Sequence
 from typing_extensions import override
-import copy
 import json
 
 from google.adk.agents import BaseAgent
