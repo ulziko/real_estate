@@ -59,12 +59,17 @@ class SafetyAnalysisAgent(BaseAgent):
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
         section_name = "Аюулгүй байдлын мэдээлэл"
         state = ctx.session.state
-        json_file_path="../../../data/crime_rate.json"
+        json_file_path="./data/crime_rate.json"
         print("bairlaliin medeelel, ", state["location"])
         try:
             with open(json_file_path, "r", encoding="utf-8-sig") as f:
-                price_info= json.load(f)
-                prompt_template = """
+                ans= json.load(f)["DataList"]
+                crime_info=[]
+                for item in ans:
+                        if "Sukhbaatar" in item["SCR_ENG"]:
+                                crime_info.append(item)
+                                
+            prompt_template = """
             Байршилийн мэдээлэл өгөгдөх үед харгалзах хотын гэмт хэргийн мэдээллийг бусад хотуудтай харьцуулан харуулна уу.
 
             Байршилийн мэдээлэл:
@@ -87,7 +92,7 @@ class SafetyAnalysisAgent(BaseAgent):
                         """
             ANALYZE_PROMPT = PromptTemplate.from_template(prompt_template)
             analysis_chain = ANALYZE_PROMPT | self.llm_model.with_retry() | StrOutputParser()
-            response = analysis_chain.invoke({"context": state["location"], "price_context": price_info})
+            response = analysis_chain.invoke({"context": state["location"], "crime_context": crime_info})
 
             yield Event(
                 invocation_id=ctx.invocation_id,

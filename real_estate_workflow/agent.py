@@ -27,6 +27,7 @@ from multi_agents.agents.retrieval.real_estate_page_agent import RealEstatePageR
 from multi_agents.agents.research.district_analysis import DistrictAnalysisAgent
 from multi_agents.agents.research.safety_agent import SafetyAnalysisAgent
 
+
 LLM_Model = "gemini-1.5-pro"
 
 logging.basicConfig(level=logging.INFO)
@@ -49,15 +50,14 @@ parallel_retrieval_agent = ParallelAgent(
     sub_agents=[page_retriever]
 )
 
-#Analysis Workflow
-parallel_analysis_agent = ParallelAgent(
-    name="ParallelAnalysisSubWorkflow",
-    sub_agents=[district_analysis,safety_analysis]
+sequential_analysis_agent = SequentialAgent(
+    name="SequentialAnalysisSubWorkflow",
+    sub_agents=[district_analysis, safety_analysis]
 )
 
 #Writer agent
 root_agent = SequentialAgent(
     name="real_estate_workflow",
-    sub_agents=[parallel_retrieval_agent, parallel_analysis_agent]
+    sub_agents=[parallel_retrieval_agent, sequential_analysis_agent]
 )
 
