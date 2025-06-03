@@ -54,9 +54,17 @@ sequential_analysis_agent = SequentialAgent(
     sub_agents=[district_analysis, safety_analysis]
 )
 
-root_agent = SequentialAgent(
+report_agent = SequentialAgent(
     name="real_estate_workflow",
     sub_agents=[parallel_retrieval_agent, sequential_analysis_agent]
 )
 
+
+
+root_agent = LlmAgent(
+            model=LLM_Model,
+            name='root_agent',
+            instruction="if user provides link use report envoke report_agent tool and directly send answer to user your conversation must be in mongolian",
+            tools=[AgentTool(agent=report_agent)]
+        )
 
