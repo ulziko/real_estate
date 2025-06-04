@@ -16,12 +16,13 @@ def scrape_unegui():
                 price = item.query_selector(".advert__content-price")
                 location = item.query_selector(".advert__content-place")
                 size =( item.inner_text().split("мк")[0]).split(" ")[-1] if "мк" in item.inner_text() else ""
+                pre="https://www.unegui.mn"
                 data.append({
                     "title": title.inner_text().strip() if title else "",
                     "price": price.inner_text().strip() if price else "",
                     "location": location.inner_text().strip() if location else "",
                     "size": size.strip(),
-                    "link": item.query_selector("a").get_attribute("href")
+                    "link": pre+item.query_selector("a").get_attribute("href")
                 })
             time.sleep(5)
         browser.close()

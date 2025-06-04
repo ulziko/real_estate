@@ -24,9 +24,11 @@ from multi_agents.agents.retrieval.real_estate_page_agent import RealEstatePageR
 from multi_agents.agents.retrieval.crime_rate_retrieval import CrimeRateAgent
 from multi_agents.agents.retrieval.avg_price_by_district_retriever import AvgPriceRetriever
 from multi_agents.agents.research.district_analysis import DistrictAnalysisAgent
+from multi_agents.agents.research.rental_analysis import RentalAnalysisAgent
 from multi_agents.agents.research.safety_agent import SafetyAnalysisAgent
+from multi_agents.agents.research.similar_real_estate_search import SimilarPropertySearch
 from . import prompt
-LLM_Model = "gemini-1.5-pro"
+LLM_Model = "gemini-2.0-flash-lite"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -43,7 +45,8 @@ crime_rate_retriever= CrimeRateAgent(name="crime_rate_retriever")
 avg_price_retriever= AvgPriceRetriever(name="avg_price_retriever")
 district_analysis = DistrictAnalysisAgent(name="district_analysis", llm_model=llm)
 safety_analysis = SafetyAnalysisAgent(name="safety_analysis", llm_model=llm)
-
+rental_analysis = RentalAnalysisAgent(name="rental_analysis", llm_model=llm)
+similar_analysis =SimilarPropertySearch(name="similar_analysis", llm_model=llm)
 #Extractor Workflow
 parallel_retrieval_agent = ParallelAgent(
     name="ParallelRetrievalSubworkflow",
@@ -52,7 +55,7 @@ parallel_retrieval_agent = ParallelAgent(
 
 sequential_analysis_agent = SequentialAgent(
     name="SequentialAnalysisSubWorkflow",
-    sub_agents=[district_analysis, safety_analysis]
+    sub_agents=[district_analysis, safety_analysis,similar_analysis]
 )
 
 report_agent = SequentialAgent(
@@ -66,6 +69,6 @@ report_agent = SequentialAgent(
 root_agent = LlmAgent(
             model=LLM_Model,
             name='root_agent',
-            instruction="if user provide link you are responsible for must extract link pass it to  following agent report_agent.  otherwise directly  answer user with your answer also conversation must be in mongolian",
+            instruction="if user provide link you are responsible for  following agent report_agent.  otherwise directly  answer user with your answer also conversation must be in mongolian",
             sub_agents=[report_agent]
 )

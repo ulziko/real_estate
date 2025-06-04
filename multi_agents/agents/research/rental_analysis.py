@@ -17,20 +17,18 @@ from langchain_together import ChatTogether
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
-class DistrictAnalysisAgent(BaseAgent):
+class RentalAnalysisAgent(BaseAgent):
     llm_model: ChatTogether
 
     model_config = {"arbitrary_types_allowed": True}
-
-    def __init__(self, name: str, llm_model: ChatTogether, json_file_path: str = "./data/rental_data.json"):
+    def __init__(self, name: str, llm_model: ChatTogether ):
         super().__init__(name=name, llm_model=llm_model)
-        self.json_file_path = json_file_path
 
     @override
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
         section_name = "Дүүргийн мэдээлэл"
         state = ctx.session.state
-
+        json_file_path = "./data/rental_data.json"
         logging.info("Rental data: %s", state.get("rental_data"))
 
         # Validate required state fields
@@ -46,7 +44,7 @@ class DistrictAnalysisAgent(BaseAgent):
                 )
                 return
 
-        if not os.path.exists(self.json_file_path):
+        if not os.path.exists(json_file_path):
             msg = "No data file found"
             yield Event(
                 invocation_id=ctx.invocation_id,
@@ -58,7 +56,7 @@ class DistrictAnalysisAgent(BaseAgent):
             return
 
         try:
-            with open(self.json_file_path, "r", encoding="utf-8-sig") as f:
+            with open(json_file_path, "r", encoding="utf-8-sig") as f:
                 price_info = json.load(f)
 
             prompt_template = """

@@ -60,6 +60,8 @@ class DistrictAnalysisAgent(BaseAgent):
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
         section_name = "Дүүргийн мэдээлэл"
         state = ctx.session.state
+        print("strf")
+        print(ctx.session)
         json_file_path="./data/avg_price.json"
         print("bairlaliin medeelel, ", state["location"])
         try:
