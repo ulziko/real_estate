@@ -36,6 +36,7 @@ llm = ChatTogether(
     model="meta-llama/Meta-Llama-3-70B-Instruct-Turbo",
 )
 
+
 search_tool = TavilySearchResults(max_results=5, search_depth="advanced", include_answer=True)
 page_retriever = RealEstatePageRetriever(name="real_esate_page_retriever")
 crime_rate_retriever= CrimeRateAgent(name="crime_rate_retriever")
@@ -56,6 +57,7 @@ sequential_analysis_agent = SequentialAgent(
 
 report_agent = SequentialAgent(
     name="real_estate_workflow",
+    description="report writer agent",
     sub_agents=[parallel_retrieval_agent, sequential_analysis_agent]
 )
 
@@ -64,7 +66,6 @@ report_agent = SequentialAgent(
 root_agent = LlmAgent(
             model=LLM_Model,
             name='root_agent',
-            instruction="if user provides link use report envoke report_agent tool and directly send answer to user your conversation must be in mongolian",
-            tools=[AgentTool(agent=report_agent)]
-        )
-
+            instruction="if user provide link you are responsible for must extract link pass it to  following agent report_agent.  otherwise directly  answer user with your answer also conversation must be in mongolian",
+            sub_agents=[report_agent]
+)

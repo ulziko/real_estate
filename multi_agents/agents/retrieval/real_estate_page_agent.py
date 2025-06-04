@@ -3,7 +3,7 @@ from typing import AsyncGenerator, Sequence
 from typing_extensions import override
 import copy
 import json
-
+import re
 from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event, EventActions
@@ -23,6 +23,18 @@ def findFeature(li_list, header):
       return text[len(header) + 1:]
   return ret
 
+
+def extract_links(text):
+    # Regular expression to find URLs
+    url_pattern = re.compile(
+        r'(https?://[^\s]+)'
+    )
+    if url_pattern.findall(text):
+       return url_pattern.findall(text)[0]
+    else :
+       return False
+
+
 class RealEstatePageRetriever(BaseAgent):
     # --- Field Declarations for Pydantic ---
 
@@ -34,14 +46,11 @@ class RealEstatePageRetriever(BaseAgent):
 
     @override
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
-        url_text = ctx.session.events[0].content.parts[0].text
-        # for event in ctx.session.events:
-        #     print("Event ", event)
-        #     if hasattr(event.content.parts[0], "text"):
-        #         print("event text: ", )
-        # print("event text: ", ctx.session.events[0])
+        for each in ctx.session.events:
+            url_text=extract_links(each.content.parts[0].text)
+            if  url_text:
+               break
         url = url_text
-
         response = requests.get(url)
         if response.status_code != 200:
             print(response.status_code)
