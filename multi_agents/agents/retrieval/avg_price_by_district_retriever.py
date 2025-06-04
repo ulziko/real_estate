@@ -21,16 +21,13 @@ class AvgPriceRetriever(BaseAgent):
     @override
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
         url = "https://opendata.1212.mn/api/Data?type=json"
-
         payload = {
         "tbl_id": "DT_NSO_0300_00V2", 
         "Period": ["202504"], 
         }
-
         headers = {
             "Content-Type": "application/json"
         }
-
         response = requests.post(url, json=payload, headers=headers)
 
         if response.status_code == 200:
