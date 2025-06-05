@@ -1,37 +1,38 @@
 # NUM - ML 2025 Spring - Real Estate Assistant
 Энэхүү үл хөдлөх хөрөнгийн туслах нь Улаанбаатар хотын үл хөдлөх хөрөнгийн зах зээлийн мэдээллийг цуглуулж, боловсруулж, дүн шинжилгээ хийн 
  линк өгөхөд 5 төрлийн тайлан гаргаж мөн асуусан асуултад хариулдаг болсон. 
-- Шаардлагын дагуух даалгаврын хэрэгжүүлэлт:
-    Vector Store ашиглах (FAISS/Vertex RAG): src/.py
-    5 төрлийн тайлан гаргах: src/.py
-    Үл хөдлөх хөрөнгийн сайт scraping: src/.py
-    Интернэт хайлт нэгтгэх(Tavily/Bing): src/.py
-    PDF тайлан хадгалах: src/.py
-    Chain-of-Thought дүн шинжилгээ: src/.py 
+| Шаардлага | Хэрэгжүүлсэн файл | 
+|-----------|------------------|
+| **Vector Store ашиглах** (FAISS/Vertex RAG) | `src/.py` |
+| **5 төрлийн тайлан гаргах** | `src/.py` | 
+| **Үл хөдлөх хөрөнгийн сайт scraping** (1212.mn/unegui.mn) | `src/.py`, `src/.py` | 
+| **Интернэт хайлт нэгтгэх** (Tavily/Bing) | `src/.py` | 
+| **PDF тайлан хадгалах** | `src/.py` | 
+| **Chain-of-Thought дүн шинжилгээ** | `src/.py` |
 
-##5 төрлийн тайлангийн ангилал (25 оноо)
+## 5 төрлийн тайлангийн ангилал (25 оноо)
 
 ### 1. Орон сууцны үнийн дундаж (байршлаар)
-- File: multi_agents/agents/research/district_analysis.py
+- File: `multi_agents/agents/research/district_analysis.py`
 - Улаанбаатарын дүүрэг бүрээр орон сууцны дундаж үнэ, м² үнэ тооцоолох
 - Chain-of-Thought: Хамгийн хямд дүүргийг зөвлөх 
   
 ### 2. Түрээсийн зах зээлийн дүн шинжилгээ
-- File: multi_agents/agents/research/rental_analysis.py
+- File: `multi_agents/agents/research/rental_analysis.py`
 - Үндсэн үүрэг: Түрээсийн үнэ, хугацаа, байршлын харьцуулалт
 - Өгөгдлийн эх үүсвэр: unegui.mn веб scraping
 
 ### 3. Хувийн орон сууц/байшингийн зах зээлийн мэдээлэл
-- File: src/analysis/housing_market_analyzer.py
+- File: `src/.py`
 - Үндсэн үүрэг: Хотын төв болон захын бүсийн харьцуулалт, эрэлттэй бүсийн дүн шинжилгээ
 - Хайлтын нэгтгэл: Bing/Tavily API ашиглалт
 
 ### 4. Оффис болон арилжааны талбайн мэдээлэл
-- File: src/analysis/commercial_analyzer.py
+- File: `src/.py`
 - Үндсэн үүрэг: Арилжааны зориулалттай үл хөдлөх хөрөнгийн үнэ, хэмжээний дүн шинжилгээ
 
 ### 5. Нийгмийн аюулгүй байдал (гэмт хэргийн түвшин)
-- File: multi_agents/agents/research/safety_agent.py
+- File: `multi_agents/agents/research/safety_agent.py`
 - Өгөгдлийн эх үүсвэр: 1212.mn scraping
 - Үзүүлэлтүүд: Хулгай, дээрэм, хүчирхийллийн гэмт хэргийн түвшин
 
@@ -92,69 +93,13 @@ class SafetyScraper:
 
 ### 3. Web search
 ```python
-# web_search.py
-import requests
-from tavily import TavilyClient
 
-class WebSearchManager:
-    def __init__(self):
-        self.tavily_client = TavilyClient(api_key="your_api_key")
-        self.bing_api_key = "your_bing_key"
-    
-    def search_tavily(self, query):
-        """Tavily API로 검색"""
-        response = self.tavily_client.search(
-            query=query,
-            search_depth="advanced",
-            max_results=10
-        )
-        return response['results']
-    
-    def search_bing(self, query):
-        """Bing Search API로 검색"""
-        headers = {'Ocp-Apim-Subscription-Key': self.bing_api_key}
-        params = {'q': query, 'count': 10}
-        response = requests.get(
-            'https://api.bing.microsoft.com/v7.0/search',
-            headers=headers, params=params
-        )
-        return response.json()
+
 ```
 
 ### 4. Chain-of-Thought 
 ```python
-# cot_analyzer.py
-class ChainOfThoughtAnalyzer:
-    def analyze_best_district(self, price_data):
-        """최적 지역 추천을 위한 단계별 추론"""
-        
-        # Step 1: 가격 데이터 정규화
-        normalized_prices = self._normalize_prices(price_data)
-        
-        # Step 2: 교통 접근성 점수 계산
-        transport_scores = self._calculate_transport_scores()
-        
-        # Step 3: 안전도 점수 계산
-        safety_scores = self._calculate_safety_scores()
-        
-        # Step 4: 종합 점수 계산
-        final_scores = self._calculate_final_scores(
-            normalized_prices, transport_scores, safety_scores
-        )
-        
-        # Step 5: 추천 근거 생성
-        recommendation = self._generate_recommendation(final_scores)
-        
-        return {
-            'reasoning_steps': [
-                "1단계: 가격 데이터 분석 완료",
-                "2단계: 교통 접근성 평가 완료", 
-                "3단계: 안전도 분석 완료",
-                "4단계: 종합 점수 산출 완료",
-                "5단계: 최종 추천 생성"
-            ],
-            'recommendation': recommendation
-        }
+   
 ```
 
 ### 5. PDF тайлан үүсгэх 
