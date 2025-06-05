@@ -66,51 +66,36 @@ class FAISSVectorStore:
 
 ### 2. Web scrap
 ```python
-# websc.py
+# parser.py
 from playwright.sync_api import sync_playwright
 import json
-import re
-from datetime import datetime
 
-class UneguiScraper:
-    def __init__(self):
-        self.base_url = "https://www.unegui.mn/l-hdlh/l-hdlh-treesllne/oron-suuts/"
-        self.selectors = {
-            'listings': "div.js-item-listing",
-            'title': "a.advert__content-title",
-            'price': ".advert__content-price",
-            'location': ".advert__content-place"
-        }
-    
-    def parse_price(self, text):
-        if not text: return None
-        nums = re.findall(r'[\d,]+', text)
-        if not nums: return None
-        price = float(nums[0].replace(',', ''))
-        if 'сая' in text: price *= 1000000
-        elif 'мянга' in text: price *= 1000
-        return int(price)
-    
-    def scrape(self, pages=3):
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            data = []
-            
-            for i in range(1, pages + 1):
-                print(f"Scraping page {i}...")
-                try:
-                    page.goto(f"{self.base_url}?page={i}", wait_until="domcontentloaded")
-                    page.wait_for_timeout(2000)
-                    
-                    for item in page.query_selector_all(self.selectors['listings']):
-                        try:
-                            title = item.query_selector(self.selectors['title'])
-                            price = item.query_selector(self.selectors['price'])
-                            location = item.query_selector(self.selectors['location'])
-                            text = item.inner_text()
-                            
- pass
+def scrape_unegui():
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto("https://www.unegui.mn/l-hdlh/l-hdlh-zarna/ub-hanuul/", timeout=100000, wait_until="domcontentloaded")
+        listings = page.query_selector_all("div.js-item-listing")
+        data = []
+        for item in listings:
+            title = item.query_selector("a.advert__content-title") or item.query_selector("h2")
+            price = item.query_selector(".advert__content-price")
+            location = item.query_selector(".advert__content-place")
+            size =( item.inner_text().split("мк")[0]).split(" ")[-1] if "мк" in item.inner_text() else ""
+
+            data.append({
+                "title": title.inner_text().strip() if title else "",
+                "price": price.inner_text().strip() if price else "",
+                "location": location.inner_text().strip() if location else "",
+                "size": size.strip(),
+                "link": item.query_selector("a").get_attribute("href")
+            })
+        browser.close()
+
+        with open("unegui_listings.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+scrape_unegui()
 
 ```
 
