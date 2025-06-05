@@ -66,29 +66,52 @@ class FAISSVectorStore:
 
 ### 2. Web scrap
 ```python
-# unegui_scraper.py
-import requests
-from bs4 import BeautifulSoup
-import pandas as pd
+# websc.py
+from playwright.sync_api import sync_playwright
+import json
+import re
+from datetime import datetime
 
-class UneGuiScraper:
+class UneguiScraper:
     def __init__(self):
-        self.base_url = "https://unegui.mn"
+        self.base_url = "https://www.unegui.mn/l-hdlh/l-hdlh-treesllne/oron-suuts/"
+        self.selectors = {
+            'listings': "div.js-item-listing",
+            'title': "a.advert__content-title",
+            'price': ".advert__content-price",
+            'location': ".advert__content-place"
+        }
     
-    def scrape_rental_data(self):
-        """unegui.mn에서 임대 정보 크롤링"""
-        # 구현 코드
-        pass
+    def parse_price(self, text):
+        if not text: return None
+        nums = re.findall(r'[\d,]+', text)
+        if not nums: return None
+        price = float(nums[0].replace(',', ''))
+        if 'сая' in text: price *= 1000000
+        elif 'мянга' in text: price *= 1000
+        return int(price)
     
-    def save_to_csv(self, data, filename):
-       
-        df = pd.DataFrame(data)
-        df.to_csv(f"data/scraped_data/{filename}", index=False)
+    def scrape(self, pages=3):
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            data = []
+            
+            for i in range(1, pages + 1):
+                print(f"Scraping page {i}...")
+                try:
+                    page.goto(f"{self.base_url}?page={i}", wait_until="domcontentloaded")
+                    page.wait_for_timeout(2000)
+                    
+                    for item in page.query_selector_all(self.selectors['listings']):
+                        try:
+                            title = item.query_selector(self.selectors['title'])
+                            price = item.query_selector(self.selectors['price'])
+                            location = item.query_selector(self.selectors['location'])
+                            text = item.inner_text()
+                            
+ pass
 
-# safety_scraper.py
-class SafetyScraper:
-    def scrape_crime_data(self):
-        pass
 ```
 
 ### 3. Web search
