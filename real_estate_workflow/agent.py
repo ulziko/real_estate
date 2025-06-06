@@ -1,24 +1,9 @@
 # Full runnable code for the RealEstateAgent
 import logging
-from typing import AsyncGenerator, Sequence
 from typing_extensions import override
-import copy
-import json
-import os
-import re
-import urllib.parse
-from google.adk.agents import LlmAgent, BaseAgent, LoopAgent, SequentialAgent, ParallelAgent
+from google.adk.agents import LlmAgent, SequentialAgent, ParallelAgent
 from google.adk.agents.invocation_context import InvocationContext
-from google.genai import types
-from google.genai.types import Content, HttpOptions, Part
-from google.adk.sessions import InMemorySessionService
-from google.adk.runners import Runner
-from google.adk.events import Event, EventActions
-from google.adk.tools.agent_tool import AgentTool
-from pydantic import BaseModel, Field
-from google import genai
 from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain_core.documents import Document
 from langchain_together import ChatTogether
 from multi_agents.agents.retrieval.real_estate_page_agent import RealEstatePageRetriever
 from multi_agents.agents.retrieval.crime_rate_retrieval import CrimeRateAgent
@@ -26,6 +11,7 @@ from multi_agents.agents.retrieval.avg_price_by_district_retriever import AvgPri
 from multi_agents.agents.research.district_analysis import DistrictAnalysisAgent
 from multi_agents.agents.research.rental_analysis import RentalAnalysisAgent
 from multi_agents.agents.research.safety_agent import SafetyAnalysisAgent
+from multi_agents.agents.research.overall_analysis import OverallAnalysisAgent
 from multi_agents.agents.research.similar_real_estate_search import SimilarPropertySearch
 from . import prompt
 LLM_Model = "gemini-2.0-flash-lite"
@@ -47,6 +33,7 @@ district_analysis = DistrictAnalysisAgent(name="district_analysis", llm_model=ll
 safety_analysis = SafetyAnalysisAgent(name="safety_analysis", llm_model=llm)
 rental_analysis = RentalAnalysisAgent(name="rental_analysis", llm_model=llm)
 similar_analysis =SimilarPropertySearch(name="similar_analysis", llm_model=llm)
+overall_analysis =OverallAnalysisAgent(name="similar_analysis", llm_model=llm)
 #Extractor Workflow
 parallel_retrieval_agent = ParallelAgent(
     name="ParallelRetrievalSubworkflow",
@@ -55,7 +42,7 @@ parallel_retrieval_agent = ParallelAgent(
 
 sequential_analysis_agent = SequentialAgent(
     name="SequentialAnalysisSubWorkflow",
-    sub_agents=[district_analysis, safety_analysis,similar_analysis]
+    sub_agents=[overall_analysis,district_analysis, safety_analysis,similar_analysis]
 )
 
 report_agent = SequentialAgent(
@@ -69,6 +56,6 @@ report_agent = SequentialAgent(
 root_agent = LlmAgent(
             model=LLM_Model,
             name='root_agent',
-            instruction="if user provide link you are responsible for  following agent report_agent.  otherwise directly  answer user with your answer also conversation must be in mongolian",
+            instruction="if user provide link you are responsible for  calling following agent report_agent. don't add text just call the agent ",
             sub_agents=[report_agent]
 )

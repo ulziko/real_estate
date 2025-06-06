@@ -1,7 +1,6 @@
 import logging
 from typing import AsyncGenerator, Sequence
 from typing_extensions import override
-import copy
 import json
 
 from google.adk.agents import BaseAgent
@@ -19,6 +18,7 @@ import json
 import os
 import re
 import urllib.parse
+
 from google.adk.agents import LlmAgent, BaseAgent, LoopAgent, SequentialAgent, ParallelAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.genai import types
@@ -27,7 +27,8 @@ from google.adk.runners import Runner
 from google.adk.events import Event, EventActions
 from pydantic import BaseModel, Field
 from google import genai
-from google.genai.types import Content, Part
+from google.genai.types import Content, HttpOptions, Part
+
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.documents import Document
 from langchain_core.prompts import (
@@ -35,6 +36,7 @@ from langchain_core.prompts import (
     MessagesPlaceholder,
     PromptTemplate,
 )
+
 from langchain_core.runnables import (
     Runnable,
     RunnableLambda,
@@ -43,7 +45,7 @@ from langchain_core.runnables import (
 )
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 
-class DistrictAnalysisAgent(BaseAgent):
+class OverallAnalysisAgent(BaseAgent):
     # --- Field Declarations for Pydantic ---
     llm_model: ChatTogether
 
@@ -55,38 +57,21 @@ class DistrictAnalysisAgent(BaseAgent):
 
     @override
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
-        section_name = "Дүүргийн мэдээлэл"
+        section_name = "ерөнхий байрны мэдээлэл"
         state = ctx.session.state
-        print("strf")
-        print(ctx.session)
-        json_file_path="./data/avg_price.json"
-        print("bairlaliin medeelel, ", state["location"])
         try:
-            with open(json_file_path, "r", encoding="utf-8-sig") as f:
-                price_info= json.load(f)
             prompt_template = """
-            Байршилийн мэдээлэл өгөгдөх үед харгалзах дүүргийн м2 квадратын дундаж мэдээллүүдийг харуулна уу.
+            Given html list type of information your goal is to extract general information and present overall real estate information to the user.
+            Your communication should be all in mongolian. And don't include introduction such as  here is the answer.
 
-            Байршилийн мэдээлэл:
+             Өгөгдсөн мэдээлэл:
             <context>
             {context}
             </context>
-
-            Үнийн мэдээлэл:
-            <context>
-            {price_context}
-            </context>
-            Your output must strictly follow the following format, (no additional text):
-            - Дүүрэг: [Дүүргийн нэр]\n
-                - Нийт байрны 1м2 дундаж үнэ: [TO BE FILLED] [to be one of тэрбум, сая, мянга ]\n
-            - Харьцуулалт: [Бусад дүүргүүдийн дундаж үнээс дээш эсвэл доош байгаа эсэх мэдээлэл цуваа байрлалаар]\n
-
-            Your output:
-                        """
+            """
             ANALYZE_PROMPT = PromptTemplate.from_template(prompt_template)
             analysis_chain = ANALYZE_PROMPT | self.llm_model.with_retry() | StrOutputParser()
-            response = analysis_chain.invoke({"context": state["location"], "price_context": price_info})
-
+            response = analysis_chain.invoke({"context": state["other_info"]})
             yield Event(
                 invocation_id=ctx.invocation_id,
                 author=self.name,

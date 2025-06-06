@@ -63,14 +63,10 @@ class RealEstatePageRetriever(BaseAgent):
             li_class = soup.find_all("li")
             location = soup.find("span", {"itemprop": "address"}).text.strip()
             space = findFeature(li_class,'Талбай:')
-            print("title ", title)
-            print("price", price)
-            print("location",location)
-            print("space", space)
-
+            other_info= soup.find("div", {"class": "announcement-characteristics clearfix"}).text
         yield Event(
             invocation_id=ctx.invocation_id,
-            actions=EventActions(state_delta={"title": title, "price": price, "location": location, "space": space}),
+            actions=EventActions(state_delta={"title": title, "price": price, "location": location, "space": space, "other_info":other_info}),
             content=types.Content(parts=[types.Part(text="URL is loaded and extracted.")]),
             author=self.name,
             branch=ctx.branch

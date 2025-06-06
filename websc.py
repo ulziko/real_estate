@@ -59,7 +59,7 @@ class UneguiScraper:
             browser.close()
             return data
     
-    def save(self, data, filename="rental_data.json"):
+    def save(self, data, filename="./data/rental_data.json"):
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         print(f"Saved {len(data)} listings to {filename}")

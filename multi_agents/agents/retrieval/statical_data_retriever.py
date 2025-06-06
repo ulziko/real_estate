@@ -20,7 +20,7 @@ class CrimeRateAgent(BaseAgent):
 
     @override
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
-        if os.path.exists("./data/crime_rate.json"):
+        if os.path.exists("./data/water_distribution.json"):
              yield Event(
                     invocation_id=ctx.invocation_id,
                     content=types.Content(parts=[types.Part(text="crime rate data exist.")]),
@@ -30,8 +30,8 @@ class CrimeRateAgent(BaseAgent):
         else:
             url = "https://opendata.1212.mn/api/Data?type=json"
             payload = {
-                "tbl_id": "DT_NSO_2300_003V1", 
-                "Period": ["2025", "2024","2023"], 
+                "tbl_id": "DT_NSO_3500_002V1", 
+                "Period": ["2020"], 
             }
 
             headers = {
@@ -41,12 +41,12 @@ class CrimeRateAgent(BaseAgent):
             if response.status_code == 200:
                 try:
                     data = response.json()
-                    with open("./data/crime_rate.json", "w", encoding="utf-8") as f:
+                    with open("./data/water_distribution.json", "w", encoding="utf-8") as f:
                         json.dump(data, f, ensure_ascii=False, indent=4)
-                    print("crime data saved to crime_rate.json")
+                    print("crime data saved to water_distribution.json")
                     yield Event(
                         invocation_id=ctx.invocation_id,
-                        content=types.Content(parts=[types.Part(text="crime rate data saved.")]),
+                        content=types.Content(parts=[types.Part(text="water data saved.")]),
                         author=self.name,
                         branch=ctx.branch
                     )

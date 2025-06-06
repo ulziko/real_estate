@@ -15,34 +15,6 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 
 
-
-# def json_to_vectorstore( json_path: str = "./data/ul_hodloh_zarah.json"):
-#     """create vector store from vectorstore"""
-#     #load data
-#     def metadata_func(record: dict, metadata: dict) -> dict:
-#         metadata["title"] = record.get("title")
-#         metadata["link"] = record.get("link")
-#         return metadata
-#     #
-#     loader = JSONLoader(
-#         file_path=json_path,
-#         jq_schema='.data[]',
-#         content_key="content",
-#         metadata_func=metadata_func
-#     )
-#     data = loader.load()
-#     #embedding
-#     embedding = HuggingFaceEmbeddings(
-#         model_name="intfloat/multilingual-e5-large",
-#     )
-#     #vectorstore
-#     def build_vectordb(chunk_docs, embed_model):
-#         vectordb = FAISS.from_documents(chunk_docs, embed_model)
-#         vectordb.save_local("faiss")
-#         print("Vector store created!")
-#     build_vectordb(embedding)
-
-
 def json_to_vectorstore( json_path: str = "/home/ulzii/Documents/real_estate/data/ul_hodloh_zarah.json"):
     with open(json_path, "r", encoding="utf-8") as f:
         json_data = json.load(f)
@@ -103,11 +75,18 @@ class SimilarPropertySearch(BaseAgent):
             print(str(user_context))
             print(rel_docs)
             prompt_template = """
-            you have to sugges  2  similar real estates based on  user context and following documents metadata and provide user a link from metadata and tell to visit .your answers should be all in mongolian :
+            You are an similar real estate recommender . Given 4 document your goal is to reccommend 2 real estate with link so that user can visit.
+            RUles: Your answer should be all in mongolian and you have you write in following format:
+            Таний хайж буй байрны мэдэлэлэл дээр үндсэн доорх 2 байрыг санал болгож байна.
+            1.[TO be filled with description of real estate ]
+            Линк [To be filled with valid link ]
+            2.[TO be filled with description of real estate ]
+            Линк [To be filled with valid link ]
+
             <context>
             {context}
             <context>
-            relevant real estates
+            ойролцоо байж магадгүй үл хөдлөхийн зар
             <contex>
             {documents}
             <contex>
